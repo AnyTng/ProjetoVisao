@@ -35,7 +35,7 @@ void vc_timer(void) {
 
 int main(void) {
 	// Vídeo
-	char videofile[] = "..\\video2.mp4";
+	char videofile[] = "../Assets/Videos/video2.mp4";
 	cv::VideoCapture capture;
 	struct
 	{
