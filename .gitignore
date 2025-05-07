@@ -7,3 +7,7 @@
 /src/build
 *.o
 .vscode
+/VC_TB/.vs
+/VC_TB/VC_TB/x64
+/VC_TB/.idea
+/VC_TB/x64
