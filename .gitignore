@@ -6,6 +6,7 @@
 /src/CMakeLists.txt
 /src/build
 *.o
+<<<<<<< HEAD
 .vscode
 /VC_TB/.vs
 /VC_TB/VC_TB/x64
@@ -13,3 +14,11 @@
 /VC_TB/x64
 VC_TB/VC_TB/CMakeLists.txt
 VC_TB/VC_TB/build
+=======
+.vscode
+/VC_TB/.vs
+/VC_TB/VC_TB/x64
+/VC_TB/.idea
+/VC_TB/x64
+VC_TB/VC_TB/CMakeLists.txt
+>>>>>>> 7e792860207ce354d3cda33be3b7de565698fde4
