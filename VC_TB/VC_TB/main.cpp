@@ -11,11 +11,11 @@ extern "C" {
 
 int main(void) {
     // Caminho para o arquivo de v�deo
-#ifdef _WIN32                       // Any flavour of Windows (32? or 64?bit)
-    const char *videofile = "..\\..\\Assets\\video2.mp4";
+#ifdef _WIN32      //Windows
+    const char *videofile = "..\\Assets\\video2.mp4";
 #elif defined(__APPLE__) && defined(__MACH__)   // macOS
     const char *videofile = "../../Assets/video2.mp4";
-#else                               // Linux / BSD / anything else
+#else                               // Linux
     const char *videofile = "../Assets/video2.mp4";
 #endif
 
