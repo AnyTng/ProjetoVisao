@@ -13,7 +13,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include <math.h>
 #include "vc.h"
 
@@ -725,9 +725,9 @@ int vc_bgr_to_rgb(IVC *srcdst)
 		for(x=0; x<width; x++)
 		{
 			pos = y * bytesperline + x * channels;
+			unsigned char red = data[pos];
 			data[pos] = data[pos + 2];
-			data[pos + 1] = data[pos + 1];
-			data[pos + 2] = data[pos];
+			data[pos + 2] = red;
 		}
 	}
 	return 1;
@@ -764,6 +764,17 @@ int vc_hsv_segmentation(IVC *src, IVC *dst, int hmin, int hmax, int smin, int sm
 	if((src->width <= 0) || (src->height <= 0) || (src->data == NULL)) return 0;
 	if((src->width != dst->width) || (src->height != dst->height)) return 0;
 	if((src->channels != 3) || (dst->channels != 1)) return 0;
+	
+	hmin = (((float)hmin) / 360) * 255;
+	hmax = (((float)hmax) / 360) * 255;
+
+	smin = (((float)smin) / 100) * 255;
+	smax = (((float)smax) / 100) * 255;
+
+	vmin = (((float)vmin) / 100) * 255;
+	vmax = (((float)vmax) / 100) * 255;
+
+
 
 	for(y=0; y<height; y++)
 	{
@@ -776,21 +787,28 @@ int vc_hsv_segmentation(IVC *src, IVC *dst, int hmin, int hmax, int smin, int sm
 			s = (float) datasrc[pos_src + 1];
 			v = (float) datasrc[pos_src + 2];
 
-			h = (h / 255) * 360;
-			s = (s / 255) * 100;
-			v = (v / 255) * 100;
 
-			if((h >= hmin) && (h <= hmax) && (s >= smin) && (s <= smax) && (v >= vmin) && (v <= vmax))
+			if (hmin > hmax)
 			{
-				datadst[pos_dst] = 255;
-				datadst[pos_dst + 1] = 255;
-				datadst[pos_dst + 2] = 255;
+				if(((h <= hmax) || (h >= hmin)) && (s >= smin) && (s <= smax) && (v >= vmin) && (v <= vmax))
+				{
+					datadst[pos_dst] = 255;
+				}
+				else
+				{
+					datadst[pos_dst] = 0;
+				}
 			}
 			else
 			{
-				datadst[pos_dst] = 0;
-				datadst[pos_dst + 1] = 0;
-				datadst[pos_dst + 2] = 0;
+				if((h >= hmin) && (h <= hmax) && (s >= smin) && (s <= smax) && (v >= vmin) && (v <= vmax))
+				{
+					datadst[pos_dst] = 255;
+				}
+				else
+				{
+					datadst[pos_dst] = 0;
+				}
 			}
 		}
 	}

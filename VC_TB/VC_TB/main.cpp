@@ -10,9 +10,9 @@ extern "C" {
 }
 
 int main(void) {
-    // Caminho para o arquivo de vídeo
+    // Caminho para o arquivo de vï¿½deo
 #ifdef _WIN32                       // Any flavour of Windows (32? or 64?bit)
-    const char *videofile = "..\\Assets\\video2.mp4";
+    const char *videofile = "..\\..\\Assets\\video2.mp4";
 #elif defined(__APPLE__) && defined(__MACH__)   // macOS
     const char *videofile = "../../Assets/video2.mp4";
 #else                               // Linux / BSD / anything else
@@ -30,39 +30,54 @@ int main(void) {
     std::string str;
     int key = 0;
 
-    // Abre vídeo a partir de um arquivo
+    // Abre vï¿½deo a partir de um arquivo
     capture.open(videofile);
 
     // Alternativa: capturar da webcam
     // capture.open(0, cv::CAP_DSHOW);
 
     if (!capture.isOpened()) {
-        std::cerr << "Erro ao abrir o ficheiro de vídeo!\n";
+        std::cerr << "Erro ao abrir o ficheiro de vï¿½deo!\n";
         return 1;
     }
+    else {
+        std::cout << "Ficheiro de vï¿½deo aberto com sucesso!\n";
+    }
 
-    // Informações sobre o vídeo
+    // Informaï¿½ï¿½es sobre o vï¿½deo
     video.ntotalframes = (int)capture.get(cv::CAP_PROP_FRAME_COUNT);
     video.fps = (int)capture.get(cv::CAP_PROP_FPS);
     video.width = (int)capture.get(cv::CAP_PROP_FRAME_WIDTH);
     video.height = (int)capture.get(cv::CAP_PROP_FRAME_HEIGHT);
 
-    // Cria janela para exibir o vídeo
+    // Cria janela para exibir o vï¿½deo
     cv::namedWindow("VC - VIDEO", cv::WINDOW_AUTOSIZE);
+    
+    cv::namedWindow("VC - VIDEO2", cv::WINDOW_AUTOSIZE);
 
     cv::Mat frame;
+    cv::Mat frame2;
     const int TEXT_X = 20;
     int textY;
     const int LINE_SPACING = 25;
 
+    IVC *image0 = vc_image_new(video.width, video.height, 3, 255);
+    IVC *image1 = vc_image_new(video.width, video.height, 3, 255);
+    IVC *image2 = vc_image_new(video.width, video.height, 1, 255);
+    IVC *image3 = vc_image_new(video.width, video.height, 3, 255);
+
+
+    
     while (key != 'q') {
-        // Lê uma frame
+        // Lï¿½ uma frame
         capture.read(frame);
+        capture.read(frame2);
 
         if (frame.empty()) {
-            std::cerr << "Fim do vídeo ou erro ao ler frame.\n";
+            std::cerr << "Fim do vï¿½deo ou erro ao ler frame.\n";
             break;
         }
+
 
         video.nframe = (int)capture.get(cv::CAP_PROP_POS_FRAMES);
 
@@ -80,36 +95,51 @@ int main(void) {
         cv::putText(frame, str, cv::Point(TEXT_X, textY), cv::FONT_HERSHEY_SIMPLEX, 1.0,
             cv::Scalar(255, 255, 255), 1);
 
-        textY += LINE_SPACING;
-        str = "FRAME RATE: " + std::to_string(video.fps);
-        cv::putText(frame, str, cv::Point(TEXT_X, textY), cv::FONT_HERSHEY_SIMPLEX, 1.0,
+            textY += LINE_SPACING;
+            str = "FRAME RATE: " + std::to_string(video.fps);
+            cv::putText(frame, str, cv::Point(TEXT_X, textY), cv::FONT_HERSHEY_SIMPLEX, 1.0,
             cv::Scalar(0, 0, 0), 2);
-        cv::putText(frame, str, cv::Point(TEXT_X, textY), cv::FONT_HERSHEY_SIMPLEX, 1.0,
+            cv::putText(frame, str, cv::Point(TEXT_X, textY), cv::FONT_HERSHEY_SIMPLEX, 1.0,
             cv::Scalar(255, 255, 255), 1);
-
-        textY += LINE_SPACING;
-        str = "N. DA FRAME: " + std::to_string(video.nframe);
-        cv::putText(frame, str, cv::Point(TEXT_X, textY), cv::FONT_HERSHEY_SIMPLEX, 1.0,
+            
+            textY += LINE_SPACING;
+            str = "N. DA FRAME: " + std::to_string(video.nframe);
+            cv::putText(frame, str, cv::Point(TEXT_X, textY), cv::FONT_HERSHEY_SIMPLEX, 1.0,
             cv::Scalar(0, 0, 0), 2);
-        cv::putText(frame, str, cv::Point(TEXT_X, textY), cv::FONT_HERSHEY_SIMPLEX, 1.0,
+            cv::putText(frame, str, cv::Point(TEXT_X, textY), cv::FONT_HERSHEY_SIMPLEX, 1.0,
             cv::Scalar(255, 255, 255), 1);
+            
+            // Integraï¿½ï¿½o com biblioteca vc (descomentando se necessï¿½rio)
+            
+        memcpy(image0->data, frame.data, video.width * video.height * 3);
+        
+        vc_bgr_to_rgb(image0);
 
-        // Integração com biblioteca vc (descomentando se necessário)
-        /*
-        IVC *image = vc_image_new(video.width, video.height, 3, 255);
-        memcpy(image->data, frame.data, video.width * video.height * 3);
-        vc_rgb_get_green(image);
-        memcpy(frame.data, image->data, video.width * video.height * 3);
-        vc_image_free(image);
-        */
+        vc_rgb_to_hsv(image0, image1);
 
+        vc_hsv_segmentation(image1, image2, 70, 125, 0, 40, 20, 50);
+
+        vc_image_channels_change(image2, image3);
+
+        memcpy(frame.data, image3->data, video.width * video.height * 3);
+        
+        
         // Exibe frame
         cv::imshow("VC - VIDEO", frame);
 
-        key = cv::waitKey(1);
+        cv::imshow("VC - VIDEO2", frame2);
+        
+        key = cv::waitKey(1000 / video.fps);
     }
 
+    vc_image_free(image0);
+    vc_image_free(image1);
+    vc_image_free(image2);
+    vc_image_free(image3);
+    
     cv::destroyWindow("VC - VIDEO");
+    cv::destroyWindow("VC - VIDEO2");
+
     capture.release();
 
     return 0;
