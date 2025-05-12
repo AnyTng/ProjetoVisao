@@ -374,6 +374,36 @@ int vc_image_copy(IVC *src, IVC *dst)
 	return 1;
 }
 
+int vc_image_channels_change(IVC* src, IVC* dst)
+{
+	unsigned char* datasrc = (unsigned char*)src->data;
+	unsigned char* datadst = (unsigned char*)dst->data;
+	int bytesperline_src = src->width * src->channels;
+	int bytesperline_dst = dst->width * dst->channels;
+	int channels_src = src->channels;
+	int channels_dst = dst->channels;
+	int width = dst->width;
+	int height = dst->height;
+	int x = 0, y = 0, pos = 0, pos_dst = 0;
+
+	if ((src->width <= 0) || (src->height <= 0) || (src->data == NULL)) return 0;
+	if ((src->width != dst->width) || (src->height != dst->height)) return 0;
+	if ((src->channels != 1) || (dst->channels != 3)) return 0;
+
+	for (y = 0; y < height; y++)
+	{
+		for (x = 0; x < width; x++)
+		{
+			pos = y * bytesperline_src + x * channels_src;
+			pos_dst = y * bytesperline_dst + x * channels_dst;
+
+			datadst[pos_dst] = datasrc[pos];
+			datadst[pos_dst + 1] = datasrc[pos];
+			datadst[pos_dst + 2] = datasrc[pos];
+		}
+	}
+}
+
 int vc_count_white(IVC *src)
 {
 	unsigned char *data = (unsigned char *) src->data;
@@ -646,6 +676,58 @@ int vc_rgb_to_hsv(IVC *src, IVC *dst)
 			datadst[pos_dst] = (unsigned char) h;
 			datadst[pos_dst + 1] = (unsigned char) (s*255);
 			datadst[pos_dst + 2] = (unsigned char) (v*255);
+		}
+	}
+	return 1;
+}
+
+int vc_rgb_to_bgr(IVC *srcdst)
+{
+	unsigned char *data = (unsigned char *) srcdst->data;
+	int width = srcdst->width;
+	int height = srcdst->height;
+	int bytesperline = srcdst->width * srcdst->channels;
+	int channels = srcdst->channels;
+	int x,y;
+	long int pos;
+
+	if((srcdst->width <= 0) || (srcdst->height <= 0) || (srcdst->data == NULL)) return 0;
+	if(channels != 3) return 0;
+
+	for(y=0; y<height; y++)
+	{
+		for(x=0; x<width; x++)
+		{
+			pos = y * bytesperline + x * channels;
+			data[pos] = data[pos + 2];
+			data[pos + 1] = data[pos + 1];
+			data[pos + 2] = data[pos];
+		}
+	}
+	return 1;
+}
+
+int vc_bgr_to_rgb(IVC *srcdst)
+{
+	unsigned char *data = (unsigned char *) srcdst->data;
+	int width = srcdst->width;
+	int height = srcdst->height;
+	int bytesperline = srcdst->width * srcdst->channels;
+	int channels = srcdst->channels;
+	int x,y;
+	long int pos;
+
+	if((srcdst->width <= 0) || (srcdst->height <= 0) || (srcdst->data == NULL)) return 0;
+	if(channels != 3) return 0;
+
+	for(y=0; y<height; y++)
+	{
+		for(x=0; x<width; x++)
+		{
+			pos = y * bytesperline + x * channels;
+			data[pos] = data[pos + 2];
+			data[pos + 1] = data[pos + 1];
+			data[pos + 2] = data[pos];
 		}
 	}
 	return 1;
