@@ -65,6 +65,7 @@ typedef struct {
 IVC *vc_image_new(int width, int height, int channels, int levels);
 IVC *vc_image_free(IVC *image);
 int vc_image_copy(IVC *src, IVC *dst);
+int vc_image_channels_change(IVC *src, IVC *dst);
 
 // FUN��ES: LEITURA E ESCRITA DE IMAGENS (PBM, PGM E PPM)
 IVC *vc_read_image(char *filename);
@@ -77,6 +78,8 @@ int vc_rgb_get_green(IVC *srcdst);
 int vc_rgb_get_blue(IVC *srcdst);
 int vc_rgb_to_gray(IVC *src, IVC *dst);
 int vc_rgb_to_hsv(IVC *src, IVC *dst);
+int vc_rgb_to_bgr(IVC *srcdst);
+int vc_bgr_to_rgb(IVC *srcdst);
 int vc_hsv_segmentation(IVC *src, IVC *dst, int hmin, int hmax, int smin, int smax, int vmin, int vmax);
 int vc_scale_gray_to_color_palette(IVC *src, IVC *dst);
 int vc_gray_to_binary(IVC *src, IVC *dst, int threshold);
