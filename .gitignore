@@ -13,3 +13,4 @@
 /VC_TB/x64
 VC_TB/VC_TB/CMakeLists.txt
 VC_TB/VC_TB/build
+*.txt
