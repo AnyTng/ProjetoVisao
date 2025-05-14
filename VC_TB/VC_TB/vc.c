@@ -1597,6 +1597,7 @@ OVC* vc_binary_blob_labelling(IVC *src, IVC *dst, int *nlabels)
 		}
 	}
 	// Passo 2: Conta etiquetas e organiza a tabela de etiquetas, para que não hajam valores vazios (zero) entre etiquetas
+	//int nblobs = 0;
 	*nlabels = 0;
 	for (a = 1; a<label; a++)
 	{
@@ -1606,6 +1607,8 @@ OVC* vc_binary_blob_labelling(IVC *src, IVC *dst, int *nlabels)
 			(*nlabels)++; // Conta etiquetas
 		}
 	}
+
+	//*nlabels = nblobs;
 
 	// Se não há blobs
 	if (*nlabels == 0) return NULL;
