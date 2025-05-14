@@ -12,9 +12,13 @@ extern "C" {
 #include "vc.h"
 }
 
+constexpr int MAX_MISS = 5;     // nº máx. de frames sem detecção
+constexpr int MIN_DIST = 140;
+
 struct TrackedBlob {
     int id;
     cv::Point centroid;
+    int miss = 0;
 };
 
 struct Blobs
@@ -26,18 +30,13 @@ struct Blobs
 
 int insereBlob (Blobs **head, int area, int id)
 {   
-    if (area < 0) return 0;
-    if (id < 0) return 0;
+    if (area < 0 || id < 0) return 0;
 
     // Verifica se o blob já existe
-    Blobs *current = *head;
-    while (current != NULL) {
-        if (current->id == id) {
-            int maior = MAX(current->area, area);
-            current->area = maior;
-            return 1; // Blob já existe
+    for (Blobs *current = *head; current; current = current->next) {  // já existe?
+        if (current->id == id) { 
+            current->area = MAX(current->area, area); return 1; 
         }
-        current = current->next;
     }
     // Insere o novo blob
     Blobs *newBlob = (Blobs *)malloc(sizeof(Blobs));
@@ -52,27 +51,52 @@ int insereBlob (Blobs **head, int area, int id)
 }
 
 
-int next_id = 1;
-std::vector<TrackedBlob> tracked_blobs;
+static int next_id = 1;
+static std::vector<TrackedBlob> tracked_blobs;
 
 int find_closest_blob(cv::Point centroid) {
-    int min_dist = 140;  // Distância máxima para considerar o mesmo blob
+    int min_dist = MIN_DIST;  // Distância máxima para considerar o mesmo blob
     int best_id = -1;
+    for (size_t i = 0; i < tracked_blobs.size(); ++i) {
+        int dist = cv::norm(centroid - tracked_blobs[i].centroid);
+        if (dist < min_dist) { min_dist = dist; best_id = (int)i; }
+    }
+    /*
     for (auto& blob : tracked_blobs) {
         int dist = cv::norm(centroid - blob.centroid);
         if (dist < min_dist) {
             min_dist = dist;
             best_id = blob.id;
             blob.centroid = centroid;  // Atualiza a posição do blob
+            blob.age = 0;
         }
     }
+    */
     return best_id;
 }
+
+/*
+int update_blob_ages() {
+    for (auto& blob : tracked_blobs) {
+        blob.age++;
+    }
+    return 1;
+}
+*/
+
+/*
+void remove_old_blobs() {
+    tracked_blobs.erase(std::remove_if(tracked_blobs.begin(), tracked_blobs.end(), [](const TrackedBlob& blob) {
+        return blob.age > 5;
+    }), tracked_blobs.end());
+}
+*/
+
 
 
 int main(void) {
 #ifdef _WIN32
-    const char *videofile = "..\\..\\Assets\\video1.mp4";
+    const char *videofile = "..\\..\\Assets\\video2.mp4";
 #elif defined(__APPLE__) && defined(__MACH__)
     const char *videofile = "../../Assets/video2.mp4";
 #else
@@ -118,11 +142,11 @@ int main(void) {
     IVC *image1 = vc_image_new(video.width, video.height, 3, 255);
     IVC *image2 = vc_image_new(video.width, video.height, 1, 255);
     IVC *image3 = vc_image_new(video.width, video.height, 1, 255);
-    IVC *image4 = vc_image_new(video.width, video.height, 3, 255);
+    //IVC *image4 = vc_image_new(video.width, video.height, 3, 255);
     IVC *image5 = vc_image_new(video.width, video.height, 3, 255);
     IVC *image6 = vc_image_new(video.width, video.height, 1, 255);
-    OVC *blobs;
-    Blobs *lista;
+    OVC *blobs = nullptr;
+    Blobs *lista = nullptr;
     int nblobs = 0;
     
     std::vector<cv::Point> previous_centroids;
@@ -172,20 +196,28 @@ int main(void) {
         vc_image_alter_mask(image1, image3, image5);
             
         vc_hsv_segmentation(image5, image2, 10, 40, 20, 100, 5, 45); // cobre
-        vc_binary_open2(image2, image3, 19, 19);
-                 
+        vc_binary_open2(image2, image3, 17, 17);
+        
+        nblobs = 0;
         blobs = vc_binary_blob_labelling(image3, image6, &nblobs);
         vc_binary_blob_info(image6, blobs, nblobs);
 
+        //update_blob_ages();
+        for (TrackedBlob &tb : tracked_blobs) tb.miss++; 
+
         for (int i = 0; i < nblobs; i++) {
             cv::Point centroid(blobs[i].xc, blobs[i].yc);
-            int id = find_closest_blob(centroid);
+            int idx = find_closest_blob(centroid);
 
-            if (id == -1) {
-                id = next_id++;
-                tracked_blobs.push_back({id, centroid});
+            if (idx == -1) {                                 // novo
+                tracked_blobs.push_back({ next_id++, centroid, 0 });
+                idx = (int)tracked_blobs.size() - 1;
+            } else {                                         // visto
+                tracked_blobs[idx].centroid = centroid;
+                tracked_blobs[idx].miss = 0;
             }
-            
+            int id = tracked_blobs[idx].id;
+
             insereBlob(&lista, blobs[i].area, id);
             
             cv::circle(frame2, centroid, 5, cv::Scalar(0, 255, 0), -1);
@@ -194,22 +226,36 @@ int main(void) {
             cv::putText(frame2, "Area: " + std::to_string(blobs[i].area), cv::Point(blobs[i].x, blobs[i].y - 10), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 2);
         }
         
-        vc_image_channels_change(image6, image4);
+        //vc_image_channels_change(image6, image4);
         
         //memcpy(frame.data, image4->data, video.width * video.height * 3);
         
+        //remove_old_blobs();
+        tracked_blobs.erase(
+            std::remove_if(tracked_blobs.begin(), tracked_blobs.end(),
+                           [](const TrackedBlob &b){ return b.miss > MAX_MISS; }),
+            tracked_blobs.end());
+
+
         //cv::imshow("VC - VIDEO", frame);
         cv::imshow("VC - VIDEO2", frame2);
         
+        free(blobs);
         key = cv::waitKey(1);
     }
     
-
+    int count1=0, count2=0, count5=0;
     for (Blobs *current = lista; current != NULL; ) {
         Blobs *next = current->next;
+        
+        if (current->area > 3000 && current->area < 12000) count1++;
+        if (current->area > 12010 && current->area < 15990) count2++;
+        if (current->area > 16000 && current->area < 20000) count5++;
+        
         std::cout << "Blob ID: " << current->id << ", Area: " << current->area << std::endl;
         current = next;
     }
+    std::cout << "\nMoedas 0,01: " << count1 << "\nMoedas 0,02: " << count2 << "\nMoedas 0,05: " << count5 << std::endl;
 
     for (Blobs *current = lista; current != NULL; ) {
         Blobs *next = current->next;
@@ -220,7 +266,7 @@ int main(void) {
     vc_image_free(image1);
     vc_image_free(image2);
     vc_image_free(image3);
-    vc_image_free(image4);
+    //vc_image_free(image4);
     vc_image_free(image5);
     vc_image_free(image6);
     free(blobs);
