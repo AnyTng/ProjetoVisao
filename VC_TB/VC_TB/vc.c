@@ -1345,6 +1345,48 @@ int vc_image_subtract(IVC *src1, IVC *src2, IVC *dst)
 	return 1;
 }
 
+int vc_image_alter_mask(IVC *src, IVC *mask, IVC *dst)
+{
+	unsigned char *datasrc = (unsigned char *) src->data;
+	unsigned char *datamask = (unsigned char *) mask->data;
+	unsigned char *datadst = (unsigned char *) dst->data;
+	int height = src->height;
+	int width = src->width;
+	int bytesperline = src->width * src->channels;
+	int channels = src->channels;
+	int bytesperline_mask = mask->width * mask->channels;
+	long int pos, posmask;
+
+	// Verificação de erros
+	if((src->width <= 0) || (src->height <= 0) || (src->data == NULL)) return 0;
+	if((mask->width != src->width) || (mask->height != src->height) || (mask->channels != 1)) return 0;
+	if((dst->width != src->width) || (dst->height != src->height) || (dst->channels != src->channels)) return 0;
+
+	// Remoção
+	for(int y = 0; y < height; y++)
+	{
+		for(int x = 0; x < width; x++)
+		{
+			pos = y * bytesperline + x * channels;
+			posmask = y * bytesperline_mask + x;
+
+			if(datamask[posmask] == 0)
+			{
+				datadst[pos] = datasrc[pos];
+				datadst[pos + 1] = datasrc[pos + 1];
+				datadst[pos + 2] = datasrc[pos + 2];
+			}	
+			else
+			{
+				datadst[pos] = 0;
+				datadst[pos + 1] = 0;
+				datadst[pos + 2]= 0;
+			}		
+		}
+	}
+	return 1;
+}
+
 int vc_image_remove_mask(IVC *src, IVC *mask, IVC *dst)
 {
 	unsigned char *datasrc = (unsigned char *) src->data;
@@ -1369,6 +1411,10 @@ int vc_image_remove_mask(IVC *src, IVC *mask, IVC *dst)
         {
             datadst[i] = 0;
         }
+		else
+		{
+			datadst[i] = datasrc[i];
+		}
     }
 
 	return 1;

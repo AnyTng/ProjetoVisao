@@ -95,6 +95,7 @@ int vc_binary_close(IVC *src, IVC *dst, int kernel);
 int vc_binary_close2(IVC *src, IVC *dst, int kernel, int kernel2);
 int vc_image_subtract(IVC *src1, IVC *src2, IVC *dst);
 int vc_image_remove_mask(IVC *src, IVC *mask, IVC *dst);
+int vc_image_alter_mask(IVC *src, IVC *mask, IVC *dst);
 int vc_gray_edge_prewitt(IVC *src, IVC *dst, int th);
 int vc_gray_edge_sobel(IVC *src, IVC *dst, int th);
 int vc_gray_lowpass_mean(IVC *src, IVC *dst, int kernelsize);
