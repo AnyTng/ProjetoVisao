@@ -1345,6 +1345,75 @@ int vc_image_subtract(IVC *src1, IVC *src2, IVC *dst)
 	return 1;
 }
 
+int vc_image_add_binary(IVC *src1, IVC *src2, IVC *dst)
+{
+	unsigned char *datasrc1 = (unsigned char *) src1->data;
+	unsigned char *datasrc2 = (unsigned char *) src2->data;
+	unsigned char *datadst = (unsigned char *) dst->data;
+	int height = src1->height;
+	int width = src1->width;
+	int bytesperline = src1->width * src1->channels;
+	int channels = src1->channels;
+	int x, y;
+	long int pos;
+
+	// Verificação de erros
+	if((src1->width <= 0) || (src1->height <= 0) || (src1->data == NULL)) return 0;
+	if((src2->width != src1->width) || (src2->height != src1->height) || (src2->channels != src1->channels)) return 0;
+	if((dst->width != src1->width) || (dst->height != src1->height) || (dst->channels != src1->channels) || (channels != 1)) return 0;
+
+	// Juntar
+	for(y = 0; y < height; y++)
+	{
+		for(x = 0; x < width; x++)
+		{
+			pos = y * bytesperline + x;
+			if (datasrc1[pos] == 255 || datasrc2[pos] == 255)
+			{
+				datadst[pos] = 255;
+			}
+			else
+			{
+				datadst[pos] = 0;
+			}
+		}
+	}
+
+	return 1;
+}
+int vc_image_remove_binary(IVC* src1, IVC* src2, IVC* dst)
+{
+	unsigned char* datasrc1 = (unsigned char*)src1->data;
+	unsigned char* datasrc2 = (unsigned char*)src2->data;
+	unsigned char* datadst = (unsigned char*)dst->data;
+	int height = src1->height;
+	int width = src1->width;
+	int bytesperline = src1->width * src1->channels;
+	int channels = src1->channels;
+	int x, y;
+	long int pos;
+
+	// Verificação de erros
+	if ((src1->width <= 0) || (src1->height <= 0) || (src1->data == NULL)) return 0;
+	if ((src2->width != src1->width) || (src2->height != src1->height) || (src2->channels != src1->channels)) return 0;
+	if ((dst->width != src1->width) || (dst->height != src1->height) || (dst->channels != src1->channels) || (channels != 1)) return 0;
+
+	// Subtração binária: 255 - 0 = 255, todo o resto é 0
+	for (y = 0; y < height; y++)
+	{
+		for (x = 0; x < width; x++)
+		{
+			pos = y * bytesperline + x;
+
+			if (datasrc1[pos] == 255 && datasrc2[pos] == 0)
+				datadst[pos] = 255;
+			else
+				datadst[pos] = 0;
+		}
+	}
+	return 1;
+}
+
 int vc_image_alter_mask(IVC *src, IVC *mask, IVC *dst)
 {
 	unsigned char *datasrc = (unsigned char *) src->data;
@@ -2148,6 +2217,63 @@ int vc_gray_lowpass_gaussian_filter(IVC *src, IVC *dst)
 		}
 	}
 }
+
+int vc_rgb_lowpass_gaussian_filter(IVC *src, IVC *dst)
+{
+    unsigned char *datasrc = (unsigned char *)src->data;
+    unsigned char *datadst = (unsigned char *)dst->data;
+    int width         = src->width;
+    int height        = src->height;
+    int bytesperline  = src->bytesperline;
+    int channels      = src->channels;
+    int x, y, c;
+    long pos, posk;
+    int kernel[5][5] = {
+        { 1,  4,  7,  4, 1 },
+        { 4, 16, 26, 16, 4 },
+        { 7, 26, 41, 26, 7 },
+        { 4, 16, 26, 16, 4 },
+        { 1,  4,  7,  4, 1 }
+    };
+
+    // Verificação de erros básicos
+    if (!src || !dst) return 0;
+    if ((width <= 0) || (height <= 0)) return 0;
+    if ((width  != dst->width)  || (height != dst->height)) return 0;
+    if (channels != 3) return 0;  // agora exige 3 canais (RGB)
+
+    for (y = 0; y < height; y++)
+    {
+        for (x = 0; x < width; x++)
+        {
+            pos = y * bytesperline + x * channels;
+
+            // Para cada canal R, G e B, aplicamos o filtro
+            for (c = 0; c < 3; c++)
+            {
+                int sum = 0;
+
+                for (int j = -2; j <= 2; j++)
+                {
+                    for (int i = -2; i <= 2; i++)
+                    {
+                        int yy = y + j;
+                        int xx = x + i;
+                        if (yy >= 0 && yy < height && xx >= 0 && xx < width)
+                        {
+                            posk = yy * bytesperline + xx * channels + c;
+                            sum += datasrc[posk] * kernel[j + 2][i + 2];
+                        }
+                    }
+                }
+
+                datadst[pos + c] = (unsigned char)(sum / 273);
+            }
+        }
+    }
+	return 1;
+}
+
 
 //Função que aplica um filtro passa-alto a uma imagem grayscale
 //src: Imagem de entrada
