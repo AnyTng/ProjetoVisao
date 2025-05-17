@@ -733,18 +733,6 @@ int vc_bgr_to_rgb(IVC *srcdst)
 	return 1;
 }
 
-/*!
- * \brief Função que segmenta uma imagem em tons de cinzento.
- * \param src Imagem de entrada.
- * \param dst Imagem de saída.
- * \param hmin Matiz mínimo [0,360].
- * \param hmax Matiz máximo [0,360].
- * \param smin Saturação mínima [0,100].
- * \param smax Saturação máxima [0,100].
- * \param vmin Luminosidade mínima [0,100].
- * \param vmax Luminosidade máxima [0,100].
- * \return Retorna 1 se a segmentação foi realizada com sucesso e 0 caso contrário.
- */
 
 int vc_hsv_segmentation(IVC *src, IVC *dst, int hmin, int hmax, int smin, int smax, int vmin, int vmax)
 {

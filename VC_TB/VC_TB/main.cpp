@@ -1,3 +1,15 @@
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//           INSTITUTO POLIT�CNICO DO C�VADO E DO AVE
+//                          2024/2025
+//             ENGENHARIA DE SISTEMAS INFORM�TICOS
+//                    VISAO POR COMPUTADOR
+//
+//     [  Fábio R. G. Costa       - a22997@alunos.ipca.pt  ]
+//     [  Lino E. O. Azevedo      - a23015@alunos.ipca.pt  ]
+//     [  Goncalo T. M. Goncalves - a23020@alunos.ipca.pt  ]
+//     [  Hugo F. Baptista        - a23279@alunos.ipca.pt  ]
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 #include <iostream>
 #include <string>
 #include <vector>
@@ -34,15 +46,13 @@ int insereBlob (Blobs **head, int area, int id, float perimeter)
 {
     if (area < 0 || id < 0) return 0;
 
-    // Verifica se o blob já existe
-    for (Blobs *current = *head; current; current = current->next) {  // já existe?
+    for (Blobs *current = *head; current; current = current->next) {  
         if (current->id == id) {
             current->area = MAX(current->area, area);
 			current->perimeter = MAX(current->perimeter, perimeter);
             return 1;
         }
     }
-    // Insere o novo blob
     Blobs *newBlob = (Blobs *)malloc(sizeof(Blobs));
     if (!newBlob) return 0;
 
