@@ -99,7 +99,7 @@ void exportVideo(const std::string& filename,
 
 int main() {
 #ifdef _WIN32
-    const char* videofile = "..\\Assets\\video2.mp4";
+    const char* videofile = "..\\Assets\\video1.mp4";
 #elif defined(__APPLE__) && defined(__MACH__)
     const char* videofile = "../../Assets/video2.mp4";
 #else
@@ -144,6 +144,7 @@ int main() {
 
     std::vector<TrackedBlob> tracked_blobs_cobre;
     std::vector<TrackedBlob> tracked_blobs_dourado;
+
     int nextIdC = 1, nextIdD = 1;
     Blobs* listaC = nullptr, * listaD = nullptr;
 
@@ -297,7 +298,7 @@ int main() {
     }
 
     std::cout << "\n\nMoedas 0,01: " << count1 << "\nMoedas 0,02: " << count2 << "\nMoedas 0,05: " << count5 << std::endl;
-    std::cout << "\n\nMoedas 0,10: " << count10 << "\nMoedas 0,20: " << count20 << "\nMoedas 0,50: " << count50 << "\nMoedas 1,00: " << count100 << "\nMoedas 2,00: " << count200 << std::endl;
+    std::cout << "Moedas 0,10: " << count10 << "\nMoedas 0,20: " << count20 << "\nMoedas 0,50: " << count50 << "\nMoedas 1,00: " << count100 << "\nMoedas 2,00: " << count200 << std::endl;
 
 	int totalMoedas = count1 + count2 + count5 + count10 + count20 + count50 + count100 + count200;
 	std::cout << "\n\nTotal de moedas: " << totalMoedas << std::endl;
