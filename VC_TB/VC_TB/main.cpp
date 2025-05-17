@@ -75,10 +75,26 @@ int find_closest_blob_D(const std::vector<TrackedBlob>& tracked_blobs, cv::Point
     return best_id;
 }
 
+void exportVideo(const std::string& filename,
+    const cv::Size& frameSize,
+    const std::vector<cv::Mat>& frames,
+    double fps = 30.0)
+{
+    // Define o codec: aqui usamos MJPG (bastante compatível)
+    int fourcc = cv::VideoWriter::fourcc('M', 'J', 'P', 'G');
+    cv::VideoWriter writer(filename, fourcc, fps, frameSize, true);
+    if (!writer.isOpened()) {
+        throw std::runtime_error("Não foi possível abrir o arquivo de saída: " + filename);
+    }
+    for (const auto& f : frames) {
+        writer.write(f);   // escreve cada frame
+    }
+    writer.release();
+}
 
 int main() {
 #ifdef _WIN32
-    const char* videofile = "..\\Assets\\video1.mp4";
+    const char* videofile = "..\\Assets\\video2.mp4";
 #elif defined(__APPLE__) && defined(__MACH__)
     const char* videofile = "../../Assets/video2.mp4";
 #else
@@ -127,6 +143,9 @@ int main() {
     Blobs* listaC = nullptr, * listaD = nullptr;
 
     cv::namedWindow("VC - VIDEO", cv::WINDOW_AUTOSIZE);
+    /////////////////
+    std::vector<cv::Mat> processedFrames;
+    /////////////////
     int key = 0;
 
     while (key != 'q') {
@@ -229,11 +248,20 @@ int main() {
             tracked_blobs_dourado.end());
         free(blobs);
 
+        ////////////////////
+        processedFrames.push_back(frame2.clone());
+        ////////////////
+
         // Mostrar
         cv::imshow("VC - VIDEO", frame2);
         key = cv::waitKey(1);
     }
 
+    exportVideo("saida2.avi",
+        cv::Size(video.width, video.height),
+        processedFrames,
+        30.0);
+    std::cout << "Vídeo exportado em saida.avi\n";
 
     int count1=0, count2=0, count5=0;
     for (Blobs *current = listaC; current != NULL; ) {
@@ -253,11 +281,11 @@ int main() {
     for (Blobs *current = listaD; current != NULL; ) {
         Blobs *next = current->next;
 
-        if (current->area > 16900 && current->area < 19999) count10++;
+        if (current->area > 16906 && current->area < 19999) count10++;
         if (current->area > 20000 && current->area < 23599) count20++;
         if (current->area > 24000) count50++;
         if (current->area > 3000 && current->area < 14599) count100++;
-        if (current->area > 14600 && current->area < 16899) count200++;
+        if (current->area > 14600 && current->area <= 16905) count200++;
 
         std::cout << "Blob ID: " << current->id << ", Area: " << current->area << std::endl;
         current = next;
@@ -289,3 +317,4 @@ int main() {
 
     return 0;
 }
+
