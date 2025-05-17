@@ -261,7 +261,7 @@ int main() {
         cv::Size(video.width, video.height),
         processedFrames,
         30.0);
-    std::cout << "Vídeo exportado em saida.avi\n";
+    std::cout << "Video exportado em saida.avi\n";
 
     int count1=0, count2=0, count5=0;
     for (Blobs *current = listaC; current != NULL; ) {
