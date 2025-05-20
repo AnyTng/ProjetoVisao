@@ -212,6 +212,7 @@ int main() {
 
 
         // Preparação das imagens. Copia o frame para a imagem 0
+        memcpy(image0->data, frame.data, video.width * video.height * 3);
         // Passa de a imagem de BGR (Blue, Green, Red) para RGB (Reed, Green,)
         vc_bgr_to_rgb(image0);
         // Passa a imagem 0 para a imagem 1, em HSV 
