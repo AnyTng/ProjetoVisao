@@ -1,8 +1,8 @@
 <img width=100% src="https://capsule-render.vercel.app/api?type=waving&color=00bfbf&height=120&section=header"/>
 
-# ProjetoPDS
+# Projeto Visão Por Computador
 
-Repositório para arquivar o projeto de PDS
+Repositório para arquivar o projeto de Visão Por Computador
 
 <div align="center">
 
