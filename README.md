@@ -35,7 +35,7 @@ ________________________________________________________________________________
 **Tema:**
 Com este trabalho pretende-se dar aos alunos a oportunidade de aplicar alguns dos conceitos de processamento e análise de imagem abordados nas aulas. Os alunos deverão desenvolver um programa em C ou C++, que opere sobre vídeo disponibilizado para este trabalho prático, de modo a obter o conjunto de informação desejada (ver abaixo). Este trabalho culminará na entrega do código fonte desenvolvido, para além da obrigatória defesa oral do trabalho realizado. 
 
-[**Enunciado**](Enunciado.pdf)
+[**Enunciado**](Enunciado-VC-TP-2025.pdf)
 _____________________________________________________________________________________
 
 [**Solução**](VC_TB)
